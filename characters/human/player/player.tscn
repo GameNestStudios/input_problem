@@ -1,0 +1,71 @@
+[gd_scene load_steps=8 format=3 uid="uid://dlekrfvyx2q6m"]
+
+[ext_resource type="PackedScene" uid="uid://c3mcwwq56sqkg" path="res://characters/base_human/base_human.tscn" id="1_cw3kh"]
+[ext_resource type="Script" path="res://characters/human/player/scripts/camera_controller.gd" id="2_18s34"]
+[ext_resource type="Script" path="res://characters/human/player/scripts/inputs_controller.gd" id="2_rdcgb"]
+[ext_resource type="Script" path="res://characters/human/player/scripts/state_controller.gd" id="3_h6srx"]
+[ext_resource type="Script" path="res://characters/human/player/scripts/movement_controller.gd" id="4_ow2r1"]
+[ext_resource type="Script" path="res://characters/human/player/scripts/human_animations_controller.gd" id="5_brraf"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_cpk7g"]
+radius = 0.3
+height = 1.7
+
+[node name="Player" type="CharacterBody3D"]
+collision_layer = 2147483648
+
+[node name="PlayerCollider" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
+shape = SubResource("CapsuleShape3D_cpk7g")
+
+[node name="BaseHuman" parent="PlayerCollider" instance=ExtResource("1_cw3kh")]
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0, -0.85, 0)
+
+[node name="Skeleton3D" parent="PlayerCollider/BaseHuman/ModelRig" index="1"]
+bones/1/rotation = Quaternion(-0.144542, -0.00802278, -0.00117201, 0.989466)
+bones/5/rotation = Quaternion(-0.162681, -0.179548, -0.497321, 0.833048)
+bones/10/rotation = Quaternion(-0.162681, 0.179548, 0.497322, 0.833048)
+
+[node name="CameraHorizontalPivot" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.57617, 0)
+
+[node name="CameraVerticalPivot" type="Node3D" parent="CameraHorizontalPivot"]
+
+[node name="CameraSpringArm" type="SpringArm3D" parent="CameraHorizontalPivot/CameraVerticalPivot"]
+transform = Transform3D(1, 0, 0, 0, -0.949852, 0.3127, 0, -0.3127, -0.949852, 0, 0, 0)
+spring_length = 2.505
+margin = 0.02
+
+[node name="Camera" type="Camera3D" parent="CameraHorizontalPivot/CameraVerticalPivot/CameraSpringArm"]
+transform = Transform3D(-1, 3.73035e-14, -8.74228e-08, -9.16249e-09, -0.994493, 0.104806, -8.69413e-08, 0.104806, 0.994493, 0, 0.00540447, 2.41748)
+
+[node name="Scripts" type="Node" parent="."]
+
+[node name="InputController" type="Node" parent="Scripts" node_paths=PackedStringArray("camera_controller", "movement_controller")]
+script = ExtResource("2_rdcgb")
+camera_controller = NodePath("../CameraController")
+movement_controller = NodePath("../MovementController")
+
+[node name="CameraController" type="Node" parent="Scripts" node_paths=PackedStringArray("horizontal_pivot", "vertical_pivot", "camera")]
+script = ExtResource("2_18s34")
+horizontal_pivot = NodePath("../../CameraHorizontalPivot")
+vertical_pivot = NodePath("../../CameraHorizontalPivot/CameraVerticalPivot")
+camera = NodePath("../../CameraHorizontalPivot/CameraVerticalPivot/CameraSpringArm/Camera")
+camera_sensibility = 0.1
+
+[node name="MovementController" type="Node" parent="Scripts" node_paths=PackedStringArray("state_controller", "player_body", "player_collider", "camera_horizontal_pivot")]
+script = ExtResource("4_ow2r1")
+state_controller = NodePath("../StateController")
+player_body = NodePath("../..")
+player_collider = NodePath("../../PlayerCollider")
+camera_horizontal_pivot = NodePath("../../CameraHorizontalPivot")
+
+[node name="StateController" type="Node" parent="Scripts" node_paths=PackedStringArray("animations_controller")]
+script = ExtResource("3_h6srx")
+animations_controller = NodePath("../AnimationsController")
+
+[node name="AnimationsController" type="Node" parent="Scripts" node_paths=PackedStringArray("animation_tree")]
+script = ExtResource("5_brraf")
+animation_tree = NodePath("../../PlayerCollider/BaseHuman/AnimationTree")
+
+[editable path="PlayerCollider/BaseHuman"]
